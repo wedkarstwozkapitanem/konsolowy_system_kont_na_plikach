@@ -1,0 +1,1 @@
+# konsolowy_system_kont_na_plikach
