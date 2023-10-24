@@ -97,6 +97,7 @@ private:
 				baza_loginow[email] = haslo;
 			}
 		}
+		baza_danych.close();
 		return true;
 	}
 
@@ -116,7 +117,7 @@ private:
 			baza_danych.close();
 
 			std::fstream dane_uzytkownika;
-				dane_uzytkownika.open(email + "_" + std::to_string(losowy_id) + ".txt", std::ios::out);
+				dane_uzytkownika.open(email + ".txt", std::ios::out);
 				if (dane_uzytkownika.is_open() && dane_uzytkownika.good()) {
 				dane_uzytkownika << imie << endl;
 				dane_uzytkownika.close();
@@ -144,11 +145,56 @@ private:
 	}
 
 	void pobierz_dane_profilu() {
-		std::fstream dane(login.email + "_" + std::to_string(dane_profilu.id) + ".txt", std::ios::in);
-		std::string txt{ "" };
-		while (getline(dane, txt)) {
-			cout << txt << endl;
+		pobierz_id();
+		std::fstream dane(login.email + ".txt", std::ios::in);
+
+		if (dane.good() && dane.is_open()) {
+			std::string linia;
+			//while (getline(dane, linia)) {
+			    dane >> linia;
+			    dane_profilu.imie = linia;
+				//cout << linia << endl;
+			//}
 		}
+		else {
+			cerr << "Błąd";
+		}
+	}
+	void pobierz_dane_profilu(int id) {
+		std::fstream dane(login.email + ".txt", std::ios::in);
+
+		if (dane.good() && dane.is_open()) {
+			std::string linia;
+			//while (getline(dane, linia)) {
+				dane >> linia;
+			    dane_profilu.imie = linia;
+				//cout << linia << endl;
+				
+			//}
+		}
+		else {
+			cerr << "Błąd";
+		}
+	}
+
+	int pobierz_id() {
+		int id{ 0 };
+		std::ifstream baza_danych("baza_danych.txt");
+		if (baza_danych.good()) {
+			std::string login{ "" }, email{ "" }, haslo{ "" };
+			int id{ 0 };
+			while (getline(baza_danych, login)) {
+				if (podzial(login, 0) == this->login.email) {
+						haslo = podzial(login, email.length() + 3);
+						if (podzial(login, haslo.length() + email.length() + 3) != "") {
+							dane_profilu.id = (int)std::stoi(podzial(login, haslo.length() + email.length() + 3));
+							return dane_profilu.id;
+						}
+				}
+			}
+		}
+		baza_danych.close();
+		return 0;
 	}
 public:
 	interfejs_logowania(){
@@ -200,11 +246,8 @@ public:
 			cin >> this->login.powtorzony_email;
 		}
 	//	system("cls");
-
-
 		wprowadz_haslo();
 	}
-
 
 	void wprowadz_haslo() {
 		cout << "Wprowadz hasło ";
@@ -270,8 +313,10 @@ public:
 		}
 
 		if (baza_loginow[login.email] == login.haslo) {
-			cout << "Pomyślnie zalogowano" << endl;
-			pobierz_dane_profilu();
+			cout << "\nPomyślnie zalogowano\nWitaj ";
+			this -> pobierz_dane_profilu(pobierz_id());
+			cout << this->dane_profilu.imie;
+			cout << "\nDalsza część serwisu w budowie";
 		}
 		else {
 			if (czy_email_istnieje(login.email)) {
@@ -285,23 +330,21 @@ public:
 						}
 					}
 				}
-				pobierz_dane_profilu();
+			cout << "\nPomyślnie zalogowano\nWitaj ";
+			this -> pobierz_dane_profilu(pobierz_id());
+			this -> dane_profilu.imie;
+			
+			cout << "\nDalsza część serwisu w budowie";
 			}
 			else {
 				cout << "Nie znaleziono danego loginu!";
 			}
 		}
 	}
-
-
 };
-
-
 
 int main() {
 	setlocale(LC_CTYPE, "Polish");
-
 	interfejs_logowania logowanie;
-
 	return 0;
 }
